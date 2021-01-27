@@ -2,11 +2,12 @@ package handlers
 
 import (
 	"fmt"
+	"github.com/avct/uasurfer"
 	"github.com/gorilla/mux"
 	"github.com/ipinfo/go/v2/ipinfo"
+	"log"
 	"net"
 	"net/http"
-	"github.com/avct/uasurfer"
 	"strings"
 	"sync"
 )
@@ -24,6 +25,20 @@ var (
 type User struct {
 	UserAgentList uasurfer.UserAgent
 	IP string
+}
+
+func MakeRootHandler() http.Handler{
+	r := mux.NewRouter()
+	r.HandleFunc("/", rootHandler()).Methods(http.MethodGet)
+	return r
+}
+
+func rootHandler() func (w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		log.Println("HELLO FROM ",r.RemoteAddr )
+		w.Write([]byte("LOLKEKROOTLINK"))
+		return
+	}
 }
 
 func checkHandler() func (w http.ResponseWriter, r *http.Request){
