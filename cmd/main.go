@@ -16,9 +16,9 @@ import (
 func main() {
 	initCheckHadnle := handlers.MakeCheckHandler()
 	initRootHandler := handlers.MakeRootHandler()
-	router := initRouter(initCheckHadnle,initRootHandler)
+	initPathHandler := handlers.MakeGetVars()
+	router := initRouter(initCheckHadnle,initRootHandler,initPathHandler)
 	srv := initServer(router)
-	//http.ListenAndServe()
 	go func() {
 		log.Println("Server started on port:", os.Getenv("PORT"))
 		if err := srv.ListenAndServe(); err != nil {
@@ -41,9 +41,10 @@ func main() {
 
 }
 
-func initRouter(checkHandle,RootHandler http.Handler) *mux.Router{
+func initRouter(checkHandle,RootHandler,MakeGetVars http.Handler) *mux.Router{
 	r := mux.NewRouter()
 	r.PathPrefix("/check").Handler(checkHandle)
+	r.PathPrefix("/setTors").Handler(MakeGetVars)
 	r.PathPrefix("/").Handler(RootHandler)
 	return r
 }

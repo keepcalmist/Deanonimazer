@@ -12,7 +12,7 @@ import (
 	"sync"
 )
 
-func MakeCheckHandler() http.Handler{
+func MakeCheckHandler() http.Handler {
 	r := mux.NewRouter()
 	r.HandleFunc("/check", checkHandler()).Methods(http.MethodGet)
 	return r
@@ -24,28 +24,29 @@ var (
 
 type User struct {
 	UserAgentList uasurfer.UserAgent
-	IP string
+	IP            string
 }
 
-func MakeRootHandler() http.Handler{
+func MakeRootHandler() http.Handler {
 	r := mux.NewRouter()
 	r.HandleFunc("/", rootHandler()).Methods(http.MethodGet)
 	return r
 }
 
-func rootHandler() func (w http.ResponseWriter, r *http.Request) {
+func rootHandler() func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		log.Println("HELLO FROM ",r.RemoteAddr )
+		log.Println("HELLO FROM ", r.RemoteAddr)
 		w.Write([]byte("LOLKEKROOTLINK"))
 		return
 	}
 }
 
-func checkHandler() func (w http.ResponseWriter, r *http.Request){
+func checkHandler() func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var wg sync.WaitGroup
 		user := User{}
-		user.IP = r.RemoteAddr
+		user.IP, _,_= net.SplitHostPort(r.RemoteAddr)
+		fmt.Println(r.RemoteAddr)
 		ua := uasurfer.Parse(r.UserAgent())
 		user.UserAgentList = *ua
 		fmt.Println(user)
@@ -57,16 +58,15 @@ func checkHandler() func (w http.ResponseWriter, r *http.Request){
 }
 
 //ipinfo.io/8.8.8.8/json?token=d1f08163ebabbc
-func curlForProxy(ip string){
-client := ipinfo.NewClient(nil,nil,"d1f08163ebabbc")
-info, err := client.GetIPInfo(net.ParseIP(ip))
-if err != nil {
-	fmt.Println(err)
+func curlForProxy(ip string) {
+	client := ipinfo.NewClient(nil, nil, "d1f08163ebabbc")
+	info, err := client.GetIPInfo(net.ParseIP(ip))
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println(info.Privacy)
+	fmt.Println(info)
 }
-fmt.Println(info.Privacy)
-fmt.Println(info)
-}
-
 
 func checkBrowser(user User, group sync.WaitGroup) (browser bool) {
 	for _, r := range usersList {
@@ -91,9 +91,9 @@ func checkOS(user User, group sync.WaitGroup) (browser bool) {
 }
 
 func checkIP(user User, group sync.WaitGroup) (browser bool) {
-	userIP := strings.Split(user.IP,":")
+	userIP := strings.Split(user.IP, ":")
 	for _, r := range usersList {
-		IPs := strings.Split(r.IP,":")
+		IPs := strings.Split(r.IP, ":")
 		if userIP[0] == IPs[0] {
 			group.Done()
 			return true
